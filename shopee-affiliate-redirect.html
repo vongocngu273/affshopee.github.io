@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đang chuyển hướng...</title>
+
+  <!-- Open Graph / Facebook preview -->
+  <meta property="og:title" content="🔥 Ưu đãi đặc biệt trên Shopee!" />
+  <meta property="og:description" content="Nhấn vào để xem sản phẩm với giá tốt nhất hôm nay!" />
+  <meta property="og:image" content="https://cf.shopee.vn/file/sg-11134004-7rbm5-lqp7n6ux9lbx9b" />
+  <meta property="og:url" content="" />
+  <meta property="og:type" content="website" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #EE4D2D;
+      --orange-light: #fff3f0;
+      --text: #222;
+      --muted: #888;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--orange-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 32px rgba(238,77,45,0.10);
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--orange);
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .logo span { color: #333; }
+
+    .spinner-wrap {
+      margin: 28px auto 20px;
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #ffddd7;
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h2 {
+      font-size: 18px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .countdown {
+      display: inline-block;
+      background: var(--orange);
+      color: #fff;
+      font-weight: 700;
+      font-size: 22px;
+      width: 48px;
+      height: 48px;
+      line-height: 48px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: var(--orange);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+
+    .debug-box {
+      margin-top: 20px;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #555;
+      text-align: left;
+      word-break: break-all;
+    }
+    .debug-box strong { color: #333; }
+
+    footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Shopee<span> 🛒</span></div>
+
+  <div class="spinner-wrap">
+    <div class="spinner"></div>
+  </div>
+
+  <h2>Đang chuyển đến Shopee...</h2>
+  <p>Bạn sẽ được chuyển đến trang sản phẩm trong giây lát.<br>Vui lòng đợi hoặc nhấn nút bên dưới.</p>
+
+  <div class="countdown" id="countdown">3</div><br>
+
+  <a class="btn" id="go-btn" href="#">👉 Đến Shopee ngay</a>
+
+  <div class="debug-box" id="debug-info">
+    <strong>Thông tin tracking:</strong><br>
+    <span id="debug-text">Đang thu thập...</span>
+  </div>
+</div>
+
+<footer>Trang trung gian tiếp thị liên kết · Dữ liệu chỉ dùng nội bộ</footer>
+
+<script>
+  // ======================================================
+  // ⚙️ CẤU HÌNH — Chỉnh sửa phần này theo nhu cầu của bạn
+  // ======================================================
+
+  // 1. Link affiliate Shopee của bạn (thay bằng link thật)
+  const AFFILIATE_LINK = "https://shope.ee/xxxxxxxx";
+
+  // 2. Thời gian chờ trước khi tự redirect (giây)
+  const COUNTDOWN_SEC = 3;
+
+  // 3. Bật/tắt hiển thị debug box (false = ẩn với người dùng)
+  const SHOW_DEBUG = true;
+
+  // ======================================================
+
+  function getParams() {
+    const p = new URLSearchParams(window.location.search);
+    return {
+      fbclid: p.get('fbclid') || '',
+      utm_source: p.get('utm_source') || '',
+      utm_medium: p.get('utm_medium') || '',
+      utm_campaign: p.get('utm_campaign') || '',
+      utm_content: p.get('utm_content') || '',
+      ref: p.get('ref') || '',
+      fullUrl: window.location.href,
+      referrer: document.referrer,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent.substring(0, 80)
+    };
+  }
+
+  function saveData(data) {
+    try {
+      localStorage.setItem('affiliate_data', JSON.stringify(data));
+    } catch(e) {}
+    // Set cookie 30 ngày
+    const exp = new Date(Date.now() + 30*24*60*60*1000).toUTCString();
+    document.cookie = `fbclid=${encodeURIComponent(data.fbclid)}; expires=${exp}; path=/; SameSite=Lax`;
+  }
+
+  function buildRedirectUrl(base, data) {
+    const url = new URL(base);
+    if (data.fbclid) url.searchParams.set('fbclid', data.fbclid);
+    if (data.utm_source) url.searchParams.set('utm_source', data.utm_source);
+    if (data.utm_medium) url.searchParams.set('utm_medium', data.utm_medium);
+    if (data.utm_campaign) url.searchParams.set('utm_campaign', data.utm_campaign);
+    if (data.utm_content) url.searchParams.set('utm_content', data.utm_content);
+    return url.toString();
+  }
+
+  function showDebug(data) {
+    const box = document.getElementById('debug-info');
+    const txt = document.getElementById('debug-text');
+    if (!SHOW_DEBUG) { box.style.display = 'none'; return; }
+
+    const lines = [
+      `fbclid: <b>${data.fbclid || '(không có)'}</b>`,
+      `utm_source: ${data.utm_source || '—'}`,
+      `utm_campaign: ${data.utm_campaign || '—'}`,
+      `referrer: ${data.referrer || '—'}`,
+      `thời gian: ${data.timestamp}`
+    ];
+    txt.innerHTML = lines.join('<br>');
+  }
+
+  function startCountdown(finalUrl) {
+    let sec = COUNTDOWN_SEC;
+    const el = document.getElementById('countdown');
+    const btn = document.getElementById('go-btn');
+    btn.href = finalUrl;
+
+    const timer = setInterval(() => {
+      sec--;
+      el.textContent = sec;
+      if (sec <= 0) {
+        clearInterval(timer);
+        window.location.href = finalUrl;
+      }
+    }, 1000);
+  }
+
+  // --- Main ---
+  const data = getParams();
+  saveData(data);
+  showDebug(data);
+
+  const finalUrl = buildRedirectUrl(AFFILIATE_LINK, data);
+  startCountdown(finalUrl);
+
+  // Ghi log ra console để dễ debug
+  console.log('[Affiliate Page] Data captured:', data);
+  console.log('[Affiliate Page] Redirect to:', finalUrl);
+</script>
+
+</body>
+</html>
